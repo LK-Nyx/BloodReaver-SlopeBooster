@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>SlideBooster</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- BepInEx 6 -->
+    <Reference Include="BepInEx.Core">
+      <HintPath>/home/elo/SSD/SteamLibrary/steamapps/common/BloodReaver/BepInEx/core/BepInEx.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BepInEx.Unity.Mono">
+      <HintPath>/home/elo/SSD/SteamLibrary/steamapps/common/BloodReaver/BepInEx/core/BepInEx.Unity.Mono.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <!-- MonoMod RuntimeDetour -->
+    <Reference Include="MonoMod.RuntimeDetour">
+      <HintPath>/home/elo/SSD/SteamLibrary/steamapps/common/BloodReaver/BepInEx/core/MonoMod.RuntimeDetour.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoMod.Utils">
+      <HintPath>/home/elo/SSD/SteamLibrary/steamapps/common/BloodReaver/BepInEx/core/MonoMod.Utils.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <!-- Unity Engine -->
+    <Reference Include="UnityEngine">
+      <HintPath>/home/elo/SSD/SteamLibrary/steamapps/common/BloodReaver/BloodReaver_Data/Managed/UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>/home/elo/SSD/SteamLibrary/steamapps/common/BloodReaver/BloodReaver_Data/Managed/UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>/home/elo/SSD/SteamLibrary/steamapps/common/BloodReaver/BloodReaver_Data/Managed/UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <!-- Game assemblies -->
+    <Reference Include="Assembly-CSharp">
+      <HintPath>/home/elo/SSD/SteamLibrary/steamapps/common/BloodReaver/BloodReaver_Data/Managed/Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mirror">
+      <HintPath>/home/elo/SSD/SteamLibrary/steamapps/common/BloodReaver/BloodReaver_Data/Managed/Mirror.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+</Project>
