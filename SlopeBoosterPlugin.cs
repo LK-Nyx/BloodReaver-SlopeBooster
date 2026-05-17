@@ -6,57 +6,57 @@ using BepInEx.Unity.Mono;
 using MonoMod.RuntimeDetour;
 using UnityEngine;
 
-namespace SlideBooster
+namespace SlopeBooster
 {
-    [BepInPlugin("slidebooster", "Slide Booster", "1.0.0")]
-    public class SlideBoosterPlugin : BaseUnityPlugin
+    [BepInPlugin("slopebooster", "Slope Booster", "1.0.0")]
+    public class SlopeBoosterPlugin : BaseUnityPlugin
     {
-        private static ConfigEntry<float> CfgSlideMult;
+        private static ConfigEntry<float> CfgSlopeMult;
         private static ConfigEntry<float> CfgJumpMult;
         private static ConfigEntry<float> CfgInertiaDuration;
         private static ConfigEntry<float> CfgFadeStart;
 
         // MonoMod hooks (static field = GC root)
-        private static Hook _hookSlide;
+        private static Hook _hookSlope;
 
         // Shared state for inertia component
-        internal static Vector3 SlideDir;
-        internal static float SlideSpeed;
-        internal static float SlideTime;
+        internal static Vector3 SlopeDir;
+        internal static float SlopeSpeed;
+        internal static float SlopeTime;
 
         private void Awake()
         {
-            CfgSlideMult = Config.Bind("Boost", "SlideMultiplier", 1.2f,
-                "Slide speed multiplier (1.0 = vanilla)");
-            CfgJumpMult = Config.Bind("Boost", "JumpSlideMultiplier", 1.2f,
-                "Jump-slide speed multiplier (1.0 = vanilla)");
+            CfgSlopeMult = Config.Bind("Boost", "SlopeMultiplier", 1.2f,
+                "Slope speed multiplier (1.0 = vanilla)");
+            CfgJumpMult = Config.Bind("Boost", "JumpSlopeMultiplier", 1.2f,
+                "Jump-slope speed multiplier (1.0 = vanilla)");
             CfgInertiaDuration = Config.Bind("Inertia", "Duration", 0.8f,
                 "How long air inertia lasts after sliding (seconds)");
             CfgFadeStart = Config.Bind("Inertia", "FadeStartTime", 0.2f,
-                "When inertia starts fading (seconds after slide)");
+                "When inertia starts fading (seconds after slope)");
 
-            // Hook SlideCurve (delta-position boost — worked before)
-            var slideM = typeof(PlayerMovement).GetMethod("SlideCurve",
+            // Hook SlopeCurve (delta-position boost — worked before)
+            var slopeM = typeof(PlayerMovement).GetMethod("SlopeCurve",
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                 null, new[] { typeof(Vector3) }, null);
-            var slideD = typeof(SlideBoosterPlugin).GetMethod(nameof(SlideCurveDetour),
+            var slopeD = typeof(SlopeBoosterPlugin).GetMethod(nameof(SlopeCurveDetour),
                 BindingFlags.Static | BindingFlags.NonPublic);
-            if (slideM != null && slideD != null)
+            if (slopeM != null && slopeD != null)
             {
-                _hookSlide = new Hook(slideM, slideD);
-                _hookSlide.Apply();
+                _hookSlope = new Hook(slopeM, slopeD);
+                _hookSlope.Apply();
             }
 
             // Inject MonoBehaviour for air inertia (more reliable than AirCurve hook)
-            var go = new GameObject("SlideBooster_Inertia");
+            var go = new GameObject("SlopeBooster_Inertia");
             go.AddComponent<InertiaComponent>();
             DontDestroyOnLoad(go);
 
-            Logger.LogInfo($"SlideBooster loaded! Slide x{CfgSlideMult.Value}, " +
-                $"JumpSlide x{CfgJumpMult.Value}");
+            Logger.LogInfo($"SlopeBooster loaded! Slope x{CfgSlopeMult.Value}, " +
+                $"JumpSlope x{CfgJumpMult.Value}");
         }
 
-        private static void SlideCurveDetour(
+        private static void SlopeCurveDetour(
             Action<PlayerMovement, Vector3> orig,
             PlayerMovement self, Vector3 direction)
         {
@@ -72,15 +72,15 @@ namespace SlideBooster
             Vector3 delta = body.position - before;
             if (delta.sqrMagnitude < 0.0001f) return;
 
-            bool isJump = (bool?)GetField(self, "isSlideJump") ?? false;
-            float mult = isJump ? CfgJumpMult.Value : CfgSlideMult.Value;
+            bool isJump = (bool?)GetField(self, "isSlopeJump") ?? false;
+            float mult = isJump ? CfgJumpMult.Value : CfgSlopeMult.Value;
             body.position += delta * (mult - 1f);
 
             // Store for inertia (used by InertiaComponent)
             Vector3 total = delta + delta * (mult - 1f);
-            SlideDir = total.normalized;
-            SlideSpeed = total.magnitude / Time.fixedDeltaTime;
-            SlideTime = Time.time;
+            SlopeDir = total.normalized;
+            SlopeSpeed = total.magnitude / Time.fixedDeltaTime;
+            SlopeTime = Time.time;
         }
 
         public static Transform GetBody(PlayerMovement pm)
@@ -101,7 +101,7 @@ namespace SlideBooster
     }
 
     /// <summary>
-    /// MonoBehaviour that applies slide inertia during air movement.
+    /// MonoBehaviour that applies slope inertia during air movement.
     /// Runs every FixedUpdate — no hook needed.
     /// </summary>
     public class InertiaComponent : MonoBehaviour
@@ -130,27 +130,27 @@ namespace SlideBooster
 
             if (!_player.isActiveAndEnabled) return;
 
-            float elapsed = Time.time - SlideBoosterPlugin.SlideTime;
-            if (elapsed > SlideBoosterPlugin.GetInertiaDuration()) return;
-            if (SlideBoosterPlugin.SlideSpeed < 0.01f) return;
+            float elapsed = Time.time - SlopeBoosterPlugin.SlopeTime;
+            if (elapsed > SlopeBoosterPlugin.GetInertiaDuration()) return;
+            if (SlopeBoosterPlugin.SlopeSpeed < 0.01f) return;
 
             // Only apply in air (not sliding, not grounded)
             if (_player.grounded && !_player.jumping) return;
             if (_player.isSliding || _player.sliding) return;
 
             float fade = Mathf.Clamp01(
-                1f - ((elapsed - SlideBoosterPlugin.GetFadeStart()) /
-                      Mathf.Max(SlideBoosterPlugin.GetInertiaDuration() -
-                                SlideBoosterPlugin.GetFadeStart(), 0.01f)));
+                1f - ((elapsed - SlopeBoosterPlugin.GetFadeStart()) /
+                      Mathf.Max(SlopeBoosterPlugin.GetInertiaDuration() -
+                                SlopeBoosterPlugin.GetFadeStart(), 0.01f)));
             if (fade <= 0f) return;
 
             // Apply inertia on bodyRef
-            var body = SlideBoosterPlugin.GetBody(_player);
+            var body = SlopeBoosterPlugin.GetBody(_player);
             if (body == null) return;
 
             Vector3 add = Vector3.ProjectOnPlane(
-                SlideBoosterPlugin.SlideDir *
-                SlideBoosterPlugin.SlideSpeed * fade * Time.fixedDeltaTime,
+                SlopeBoosterPlugin.SlopeDir *
+                SlopeBoosterPlugin.SlopeSpeed * fade * Time.fixedDeltaTime,
                 _player.surfaceNormal);
 
             if (add.sqrMagnitude > 0.0001f)
